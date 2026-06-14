@@ -1,0 +1,693 @@
+{
+  "name": "cv screening",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      “id”: “remove”,
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        288,
+        960
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Extract from File').item.json.text }}",
+        "schemaType": "manual",
+        "inputSchema": "={\n  \"type\": \"object\",\n  \"required\": [\n    \"candidate_name\",\n    \"email\",\n    \"phone\",\n    \"skills\",\n    \"experience_years\",\n    \"education\",\n    \"courses\",\n    \"certificates\",\n    \"projects\",\n    \"current_role\"\n  ],\n  \"properties\": {\n    \"candidate_name\": { \"type\": \"string\" },\n    \"email\": { \"type\": \"string\" },\n    \"phone\": { \"type\": \"string\" },\n    \"skills\": { \"type\": \"string\" },\n    \"experience_years\": { \"type\": \"string\" },\n    \"education\": { \"type\": \"string\" },\n    \"courses\": { \"type\": \"string\" },\n    \"certificates\": { \"type\": \"string\" },\n    \"projects\": { \"type\": \"string\" },\n    \"current_role\": { \"type\": \"string\" }\n  }\n}",
+        "options": {}
+      },
+      "id": "remove",
+      "name": "Information Extractor",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        1088,
+        752
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "remove",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "remove",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1088,
+        1104
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawOutput = $json.output;\n\n// remove markdown if exists\nrawOutput = rawOutput.replace(/```json|```/g, '').trim();\n\nconst agentData = JSON.parse(rawOutput);\n\nreturn [\n  {\n    json: {\n      candidate_name: agentData.candidate_name || \"\",\n      match_score: agentData.match_score || \"\",\n      skill_match: agentData.skill_match || \"\",\n      experience_match: agentData.experience_match || \"\",\n      education_match: agentData.education_match || \"\",\n      final_decision: agentData.final_decision || \"\",\n      reason: agentData.reason || \"\"\n    }\n  }\n];"
+      },
+      "id": "remove",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1376,
+        1104
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id":”remove",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1664,
+        960
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        928
+      ],
+      "id": "remove",
+      "name": "OpenAI Chat Model",
+      ""value": "YOUR_SPREADSHEET_ID"": {
+        "openAiApi": {
+          "id": "removed",
+          "name": "removed"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {}
+      },
+      "id": "remove",
+      "name": "Download file",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        64,
+        960
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "remove",
+          "name": "remove"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "attachment_0",
+        "name": "={{ $json[\"Name\"] ? $json[\"Name\"] + \"_Resume.pdf\" : \"Resume.pdf\" }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "remove",
+          "mode": "list",
+          "cachedResultName": "cv",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/remove"
+        },
+        "options": {}
+      },
+      "id": "remove",
+      "name": "Upload file",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -160,
+        960
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "remove",
+          "name": "remove"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        1296
+      ],
+      "id": "remove",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "remove",
+          "name": "remove"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Resume Screening",
+          "cachedResultUrl": "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 221516846,
+          "mode": "list",
+          "cachedResultName": "hiring",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit#gid=221516846"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Job_Role",
+              "lookupValue": "={{ $('Hiring Form').item.json.profile }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        512,
+        960
+      ],
+      "id": "remove",
+      "name": "job details",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "remove",
+          "name": "remove"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "UPLOAD RESUME",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "attachment_0",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "profile",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "sales"
+                  },
+                  {
+                    "option": "cce"
+                  },
+                  {
+                    "option": "operation"
+                  },
+                  {
+                    "option": "full stack developer"
+                  },
+                  {
+                    "option": "web developer"
+                  },
+                  {
+                    "option": "AI Engg."
+                  },
+                  {
+                    "option": "AI Agent developer"
+                  },
+                  {
+                    "option": "HR "
+                  },
+                  {
+                    "option": "Accountant"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "remove",
+      "name": "Hiring Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        -400,
+        944
+      ], "pinData": {
+ ...
+}
+
+      "webhookId": "remove",
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=CV:\n{{ $('Extract from File').item.json.text }}",
+        "options": {
+          "systemMessage": "=You are a Senior AI Hiring Evaluation Assistant working as an automated Applicant Tracking System (ATS).\n\nYour role is to objectively evaluate candidate resumes strictly according to the Job Requirements received from the Google Sheet.\n\nYou must behave like a professional HR screening system and NOT like a general AI assistant.\n\n--------------------------------------------------\nROLE GOAL\n--------------------------------------------------\nYour goal is to determine how well the candidate matches the specific job role based ONLY on the provided job requirements.\n\nThe Google Sheet Job Context is the SINGLE SOURCE OF TRUTH.\n\nDo not assume missing information.\nDo not reward unrelated skills or experience.\nIf information is not clearly mentioned in the resume, consider it absent.\n\n--------------------------------------------------\nJOB REQUIREMENTS (FROM GOOGLE SHEET)\n--------------------------------------------------\nJob Role:\n{{ $json.Job_Role }}\n\nJob Description:\n{{ $json.Job_discription }}\n\nRequired Skills:\n{{ $json['Required Skills'] }}\n\nExperience Required:\n{{ $json['Experience Required'] }}\n\n--------------------------------------------------\nCANDIDATE RESUME\n--------------------------------------------------\n{{ $('Extract from File').item.json.text }}\n\n--------------------------------------------------\nEVALUATION FRAMEWORK\n--------------------------------------------------\n\nSTEP 1 — Candidate Information Extraction\nExtract:\n- candidate_name\n- education\n- total_experience\n- skills\n- certifications\n- courses\n- projects\n- current_role (if available)\n\n--------------------------------------------------\n\nSTEP 2 — Skill Match Evaluation (40%)\nCompare candidate skills ONLY with Required Skills.\n\nEvaluation Rules:\n- Strong Match → Most required skills present\n- Partial Match → Some required skills present\n- Weak Match → Majority skills missing\n\nMissing critical skills MUST reduce score.\n\n--------------------------------------------------\n\nSTEP 3 — Experience Match (25%)\nCompare candidate experience with Experience Required.\n\nRules:\n- Meets or exceeds → High score\n- Slightly below → Moderate score\n- Fresh or unrelated → Low score\n\n--------------------------------------------------\n\nSTEP 4 — Education Relevance (15%)\nCheck whether education aligns with job role domain.\n\nMark:\n- Relevant\n- Somewhat Relevant\n- Not Relevant\n\n--------------------------------------------------\n\nSTEP 5 — Projects & Practical Exposure (10%)\nEvaluate only projects related to the job role.\n\nIgnore unrelated projects.\n\n--------------------------------------------------\n\nSTEP 6 — Certifications & Learning (10%)\nConsider certifications only if relevant to the job role.\n\n--------------------------------------------------\n\nSTEP 7 — FINAL MATCH SCORE\nCalculate a realistic score between 0–100 using weighted evaluation.\n\nDo NOT inflate scores.\nBe strict and consistent.\n\n--------------------------------------------------\n\nSTEP 8 — HIRING DECISION LOGIC\n85–100  → Strong Hire  \n70–84   → Hire  \n55–69   → Consider for Interview  \n40–54   → Consider for Internship / Junior Role  \nBelow 40 → Not Recommended\n\n--------------------------------------------------\n\nSTRICT ATS RULES\n--------------------------------------------------\n- Follow Google Sheet requirements strictly.\n- Do NOT assume skills.\n- Do NOT reward unrelated experience.\n- Penalize missing mandatory skills.\n- Maintain professional HR reasoning.\n- Output must be consistent across candidates.\n\n--------------------------------------------------\nOUTPUT FORMAT (STRICT JSON ONLY)\n--------------------------------------------------\n\n{\n  \"candidate_name\": \"\",\n  \"education\": \"\",\n  \"total_experience\": \"\",\n  \"skills\": \"\",\n  \"skill_match\": \"\",\n  \"experience_match\": \"\",\n  \"education_match\": \"\",\n  \"projects\": \"\",\n  \"courses\": \"\",\n  \"certificates\": \"\",\n  \"match_score\": \"\",\n  \"final_decision\": \"\",\n  \"reason\": \"\"\n}\n\nReturn ONLY valid JSON.\nDo not include explanations.\nDo not include markdown.\n\nIMPORTANT JSON RULES:\n- match_score MUST be a NUMBER only.\n- Do NOT write numbers in words.\n- Example: \"match_score\": 45\n- Never return text like Forty-Five."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        768,
+        1104
+      ],
+      "id": "remove",
+      "name": "CV Screening"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Resume Screening",
+          "cachedResultUrl": "YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "candidates",
+          "cachedResultUrl": "YOUR_SPREADSHEET_ID"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_role": "={{ $('Hiring Form').item.json.profile }}",
+            "Resume": "={{ $('Download file').item.json.webContentLink }}",
+            "reason": "={{ $json.reason.replace(/\\. /g, \".\\n\") }}",
+            "final_decision": "={{ $json.final_decision }}",
+            "score": "={{ ($json.match_score / 10).toFixed(1) + \" / 10 ⭐\" }}",
+            "certificates": "={{ $json.output.certificates.replace(/, /g, \"\\n\") }}",
+            "course": "={{ $json.output.courses.replace(/\\. /g, \".\\n\") }}",
+            "projects": "={{ $('Information Extractor').item.json.output.projects }}",
+            "skill set": "={{ $json.output.skills.replace(/, /g, \"\\n\") }}",
+            "skill match": "={{ $json.skill_match.replace(/\\. /g, \".\\n\") }}",
+            "experience_years": "={{ $('Information Extractor').item.json.output.experience_years }}",
+            "Educational Qualifications": "={{ $json.output.education.replace(/; /g, \"\\n\") }}",
+            "contact_number": "={{ $('Information Extractor').item.json.output.phone }}",
+            "email_address": "={{ $('Information Extractor').item.json.output.email }}",
+            "candidate_name": "={{ $('Information Extractor').item.json.output.candidate_name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "candidate_name",
+              "displayName": "candidate_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email_address",
+              "displayName": "email_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_number",
+              "displayName": "contact_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Educational Qualifications",
+              "displayName": "Educational Qualifications",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "experience_years",
+              "displayName": "experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "skill set",
+              "displayName": "skill set",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "skill match",
+              "displayName": "skill match",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "course",
+              "displayName": "course",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "certificates",
+              "displayName": "certificates",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "projects",
+              "displayName": "projects",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "final_decision",
+              "displayName": "final_decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Resume",
+              "displayName": "Resume",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1872,
+        960
+      ],
+      "id":”remove",
+      "name": "candidate details",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "remove",
+          "name": "remove"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Hiring Form": [
+      {
+        "json": {
+          "attachment_0": [
+            {
+              "filename": "Resume arun.pdf",
+              "mimetype": "application/pdf",
+              "size": 96785
+            }
+          ],
+          "profile": "cce",
+          "submittedAt": "2026-02-28T07:06:58.268-05:00",
+          "formMode": "test"
+        },
+        "binary": {
+          "attachment_0": {
+            "mimeType": "application/pdf",
+            "fileType": "pdf",
+            "fileExtension": "pdf",
+            "data": "filesystem-v2",
+            "fileName": "Resume arun.pdf",
+            "id": "filesystem-v2:workflows/G3JdJfU91FQCcZPR/executions/temp/binary_data/6e5d96a0-b124-4a6e-8386-2ea4efdc9df8",
+            "fileSize": "96.8 kB"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "job details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "candidate details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CV Screening",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "job details": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CV Screening",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hiring Form": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CV Screening": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "remove",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "remove"
+  },
+  "id": "remove",
+  "tags": []
+}
